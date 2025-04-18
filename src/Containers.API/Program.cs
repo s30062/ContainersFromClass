@@ -1,3 +1,5 @@
+using Containers.Application;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("UniversityDatabase");
@@ -6,6 +8,7 @@ var connectionString = builder.Configuration.GetConnectionString("UniversityData
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSingleton<IContainerService, ContainerService>(contrainerService => new ContainerService(connectionString));
 
 var app = builder.Build();
 
@@ -37,6 +40,18 @@ app.MapGet("/weatherforecast", () =>
     })
     .WithName("GetWeatherForecast")
     .WithOpenApi();
+
+app.MapGet("/api/containers", (IContainerService containerService) =>
+{
+    try
+    {
+        return Results.Ok(containerService.GetAllContainers());
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
+});
 
 app.Run();
 
